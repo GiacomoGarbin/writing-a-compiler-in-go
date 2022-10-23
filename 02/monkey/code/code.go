@@ -10,17 +10,19 @@ type Instructions []byte
 
 type Opcode byte
 
-const (
-	OpConstant Opcode = iota
-)
-
 type Definition struct {
 	Name          string
 	OperandWidths []int
 }
 
+const (
+	OpConstant Opcode = iota
+	OpAdd
+)
+
 var definitions = map[Opcode]*Definition{
 	OpConstant: {"OpConstant", []int{2}},
+	OpAdd:      {"OpAdd", []int{}},
 }
 
 func Lookup(op byte) (*Definition, error) {
@@ -88,6 +90,8 @@ func (ins Instructions) fmtInstruction(def *Definition, operands []int) string {
 	}
 
 	switch operandCount {
+	case 0:
+		return def.Name
 	case 1:
 		return fmt.Sprintf("%s %d", def.Name, operands[0])
 	}

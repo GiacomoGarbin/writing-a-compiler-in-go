@@ -29,12 +29,12 @@ func testInstructions(
 	concatted := concatInstructions(expected)
 
 	if len(actual) != len(concatted) {
-		return fmt.Errorf("wrong instructions length:\n want=%q\n got=%q", concatted, actual)
+		return fmt.Errorf("wrong instructions length:\n want=%q\n  got=%q", concatted, actual)
 	}
 
 	for i, ins := range concatted {
 		if actual[i] != ins {
-			return fmt.Errorf("wrong instruction at %d:\n want=%q\n got=%q", i, ins, actual)
+			return fmt.Errorf("wrong instruction at %d:\n want=%q\n  got=%q", i, ins, actual)
 		}
 	}
 
@@ -94,6 +94,7 @@ func TestIntegerArithmetic(t *testing.T) {
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpConstant, 0),
 				code.Make(code.OpConstant, 1),
+				code.Make(code.OpAdd),
 			},
 		},
 	}
