@@ -29,12 +29,12 @@ func testInstructions(
 	concatted := concatInstructions(expected)
 
 	if len(actual) != len(concatted) {
-		return fmt.Errorf("wrong instructions length:\n want=%q\n got=%q", concatted, actual)
+		return fmt.Errorf("wrong instructions length:\n want=%q\n  got=%q", concatted, actual)
 	}
 
 	for i, ins := range concatted {
 		if actual[i] != ins {
-			return fmt.Errorf("wrong instruction at %d:\n want=%q\n got=%q", i, concatted, actual)
+			return fmt.Errorf("wrong instruction at %d:\n want=%q\n  got=%q", i, concatted, actual)
 		}
 	}
 
@@ -604,6 +604,7 @@ func TestCompilerScopes(t *testing.T) {
 		t.Errorf("previousInstruction.Opcode wrong: got=%d, want=%d", prev.OpCode, code.OpMul)
 	}
 }
+
 func TestFunctionsWithoutReturnValue(t *testing.T) {
 	tests := []compilerTestCase{
 		{
@@ -615,6 +616,47 @@ func TestFunctionsWithoutReturnValue(t *testing.T) {
 			},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpConstant, 0),
+				code.Make(code.OpPop),
+			},
+		},
+	}
+	runCompilerTests(t, tests)
+}
+
+func TestFunctionCalls(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input: `fn() { 24; }();`,
+			expectedConstants: []interface{}{
+				24,
+				[]code.Instructions{
+					code.Make(code.OpConstant, 0),
+					code.Make(code.OpReturnValue),
+				},
+			},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpCall),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `
+			let noArg = fn() { 24; };
+			noArg();
+			`,
+			expectedConstants: []interface{}{
+				24,
+				[]code.Instructions{
+					code.Make(code.OpConstant, 0),
+					code.Make(code.OpReturnValue),
+				},
+			},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpCall),
 				code.Make(code.OpPop),
 			},
 		},
