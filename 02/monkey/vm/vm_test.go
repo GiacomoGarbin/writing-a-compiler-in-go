@@ -336,6 +336,61 @@ func TestFirstClassFunctions(t *testing.T) {
 			`,
 			expected: 1,
 		},
+		{
+			input: `
+			let returnOneReturner = fn() {
+				let returnOne = fn() { 1; };
+				returnOne;
+			};
+			returnOneReturner()();
+			`,
+			expected: 1,
+		},
+	}
+	runVmTests(t, tests)
+}
+
+func TestCallingFunctionsWithBindings(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input: `
+			let one = fn() { let one = 1; one; };
+			one();
+			`,
+			expected: 1,
+		},
+		{
+			input: `
+			let OneAndTwo = fn() { let one = 1; let two = 2; one + two; };
+			OneAndTwo();
+			`,
+			expected: 3,
+		},
+		{
+			input: `
+			let OneAndTwo = fn() { let one = 1; let two = 2; one + two; };
+			let ThreeAndFour = fn() { let three = 3; let four = 4; three + four; };
+			OneAndTwo() + ThreeAndFour();
+			`,
+			expected: 10,
+		},
+		{
+			input: `
+			let FirstFoobar = fn() { let foobar = 50; foobar; };
+			let SecondFoobar = fn() { let foobar = 100; foobar; };
+			FirstFoobar() + SecondFoobar();
+			`,
+			expected: 150,
+		},
+		{
+			input: `
+			let GlobalSeed = 50;
+			let MinusOne = fn() { let num = 1; GlobalSeed - num; };
+			let MinusTwo = fn() { let num = 2; GlobalSeed - num; };
+			MinusOne() + MinusTwo();
+			`,
+			expected: 97,
+		},
 	}
 	runVmTests(t, tests)
 }
