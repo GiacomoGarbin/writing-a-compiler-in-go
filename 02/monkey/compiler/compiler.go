@@ -278,8 +278,13 @@ func (c *Compiler) Compile(node ast.Node) error {
 		}
 
 		numLocals := c.symbolTable.numDefinitions
+		freeSymbols := c.symbolTable.FreeSymbols
 
 		instructions := c.leaveScope()
+
+		for _, symbol := range freeSymbols {
+			c.loadSymbol(symbol)
+		}
 
 		compiledFn := &object.CompiledFunction{
 			Instructions:  instructions,
@@ -288,7 +293,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 		}
 
 		fnIndex := c.addConstant(compiledFn)
-		c.emit(code.OpClosure, fnIndex, 0)
+		c.emit(code.OpClosure, fnIndex, len(freeSymbols))
 
 	case *ast.ReturnStatement:
 		err := c.Compile(node.ReturnValue)
@@ -410,5 +415,7 @@ func (c *Compiler) loadSymbol(symbol Symbol) {
 		c.emit(code.OpGetLocal, symbol.Index)
 	case BuiltinScope:
 		c.emit(code.OpGetBuiltin, symbol.Index)
+	case FreeScope:
+		c.emit(code.OpGetFree, symbol.Index)
 	}
 }
